@@ -1,7 +1,6 @@
 /**
  * Module dependencies
  */
-
 const _ = require('@sailshq/lodash');
 const actionUtil = require('sails/lib/hooks/blueprints/actionUtil');
 
@@ -26,11 +25,28 @@ module.exports = async function findRecords(req, res) {
     const queryOptions = parseBlueprintOptions(req);
     const Model = req._sails.models[queryOptions.using];
 
-    let where = queryOptions.criteria.where;
+    /**
+     * Pages
+     */
+    let page = 1;
+    if (!_.isUndefined(queryOptions.criteria.where.page)) {
+        page = parseInt(queryOptions.criteria.where.page);
+        queryOptions.criteria.where = _.omit(queryOptions.criteria.where, 'page');
+    }
+    page = page > 1 ? (page - 1) : 0;
+    queryOptions.criteria.skip = queryOptions.criteria.limit * page;
 
-    let collections = _.keys(where).map(i => {
+    /**
+     * Filters
+     */
+    let where = queryOptions.criteria.where;
+    let collections = _.keys(where).map((i, a) => {
         let fields = i.split('.');
-        model = Model.attributes[fields[0]].collection;
+
+        if (_.isUndefined(Model.attributes[fields[0]])) {
+            return;
+        }
+        model = Model.attributes[fields[0]]['collection'];
         if (model) {
             queryOptions.criteria.where = _.omit(queryOptions.criteria.where, i);
             return {
@@ -42,42 +58,30 @@ module.exports = async function findRecords(req, res) {
     }).filter(i => i);
 
     try {
-        let globalFilter = [];
-        for (let collection of collections) {
-            let findItems = [];
 
-            let modelConnect = req._sails.models[collection.model];
+        if (collections[0]) {
+            let globalFilter = [];
+            for (let collection of collections) {
 
-            let populateName = modelConnect.associations[0]['alias'];
+                let localFilter = [];
+                let modelConnect = req._sails.models[collection.model];
+                let populateName = modelConnect.associations[0]['alias'];
 
-            let q = {};
+                let query = {};
+                query[collection.field] = collection.where;
 
-            q[collection.field] = collection.where;
+                let getItems = await modelConnect.find(query).populate(populateName);
+                getItems.forEach(i => i[populateName].forEach(item => localFilter.push(item.id)));
+                globalFilter.push(localFilter);
+            }
 
-            let getItems = await modelConnect.find(q).populate(populateName);
-
-            getItems.forEach(i => i[populateName].forEach(item => !findItems[item.id] ? findItems.push(item.id) : undefined));
-
-            globalFilter.push(findItems);
+            globalFilter = _.intersection(...globalFilter);
+            queryOptions.criteria.where['id'] = {
+                'in': globalFilter
+            };
         }
 
-        globalFilter = _.intersection(...globalFilter);
-
-        queryOptions.criteria.where['id'] = {
-            'in': globalFilter
-        };
-
-        let page = 1;
-        if (queryOptions.criteria.where.page !== undefined) {
-            page = queryOptions.criteria.where.page;
-            queryOptions.criteria.where.page = undefined;
-        }
-        page = parseInt(page) > 1 ? parseInt(page) - 1 : 0;
         const count = await Model.count(queryOptions.criteria.where);
-
-        queryOptions.criteria.skip = queryOptions.criteria.limit * page;
-
-
         const matchingRecords = await Model
             .find(queryOptions.criteria, queryOptions.populates)
             .meta(queryOptions.meta);
