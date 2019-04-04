@@ -1,0 +1,31 @@
+{
+  "name": "sails-hook-data-table",
+  "version": "1.0.1",
+  "description": "Filters fields in multiple links",
+  "main": "index.js",
+  "dependencies": {
+    "pluralize": "^7.0.0",
+    "@sailshq/lodash": "github:sailshq/lodash"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sails": {
+    "isHook": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://kube.gitlab.p2h.com/sails-js/data-table.git"
+  },
+  "keywords": [
+    "sails",
+    "hook",
+    "data-table",
+    "filters",
+    "extra",
+    "filters"
+  ],
+  "author": "Serhii Yehorov",
+  "license": "ISC"
+}
