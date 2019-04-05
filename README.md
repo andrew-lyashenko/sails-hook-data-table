@@ -1,16 +1,9 @@
 # Sails hook
 ### Install
 ```cli
-npm i git+https://kube.gitlab.p2h.com/sails-js/data-table.git
+npm install git+ssh://git@code.qpard.com:easyscat/sailsjs-data-table.git
 ```
 
-OR
-
-```json
-  "dependencies": {
-    "sails-hook-data-table": "git+https://kube.gitlab.p2h.com/sails-js/data-table.git"
-  }
-```
 
 ### Example usage
 ```postman
