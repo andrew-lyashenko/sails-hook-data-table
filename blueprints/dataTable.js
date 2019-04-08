@@ -28,13 +28,13 @@ module.exports = async function findRecords(req, res) {
     /**
      * Pages
      */
-    let page = 1;
-    if (!_.isUndefined(queryOptions.criteria.where.page)) {
-        page = parseInt(queryOptions.criteria.where.page);
-        queryOptions.criteria.where = _.omit(queryOptions.criteria.where, 'page');
-    }
-    page = page > 1 ? (page - 1) : 0;
-    queryOptions.criteria.skip = queryOptions.criteria.limit * page;
+    // let page = 1;
+    // if (!_.isUndefined(queryOptions.criteria.where.page)) {
+    //     page = parseInt(queryOptions.criteria.where.page);
+    //     queryOptions.criteria.where = _.omit(queryOptions.criteria.where, 'page');
+    // }
+    // page = page > 1 ? (page - 1) : 0;
+    // queryOptions.criteria.skip = queryOptions.criteria.limit * page;
 
     /**
      * Filters
